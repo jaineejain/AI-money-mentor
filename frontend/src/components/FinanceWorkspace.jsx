@@ -1499,7 +1499,7 @@ function Reports({ data }) {
     </>
   );
 }
-function Settings({ onEdit, onLogout }) {
+function Settings({ onEdit, onLogout, isGuest }) {
   return (
     <>
       <Header
@@ -1514,7 +1514,7 @@ function Settings({ onEdit, onLogout }) {
             Edit financial profile
           </button>
           <button className="button-secondary" onClick={onLogout}>
-            Sign out
+            {isGuest ? "Login / Sign Up" : "Sign out"}
           </button>
         </div>
       </Card>
@@ -1522,7 +1522,13 @@ function Settings({ onEdit, onLogout }) {
   );
 }
 
-export default function FinanceWorkspace({ data, onEdit, onLogout, refresh }) {
+export default function FinanceWorkspace({
+  data,
+  onEdit,
+  onLogout,
+  isGuest,
+  refresh,
+}) {
   const [view, setView] = useState("dashboard");
   const content = {
     dashboard: <Overview data={data} setView={setView} />,
@@ -1538,7 +1544,9 @@ export default function FinanceWorkspace({ data, onEdit, onLogout, refresh }) {
     simulator: <Simulator data={data} />,
     networth: <NetWorth data={data} refresh={refresh} setView={setView} />,
     reports: <Reports data={data} />,
-    settings: <Settings onEdit={onEdit} onLogout={onLogout} />,
+    settings: (
+      <Settings onEdit={onEdit} onLogout={onLogout} isGuest={isGuest} />
+    ),
   }[view];
   return (
     <div className="app-shell">
@@ -1566,8 +1574,12 @@ export default function FinanceWorkspace({ data, onEdit, onLogout, refresh }) {
           <span>✦</span> Ask AI
         </button>
         <div className="sidebar-footer">
-          <small>Private workspace</small>
-          <button onClick={onLogout}>Sign out</button>
+          <small>
+            {isGuest ? "Guest Demo · Saved locally" : "Private workspace"}
+          </small>
+          <button onClick={onLogout}>
+            {isGuest ? "Login / Sign Up" : "Sign out"}
+          </button>
         </div>
       </aside>
       <main className="workspace-main">

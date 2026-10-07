@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { login, register } from "../api";
 
-function AuthForm({ onAuthenticated }) {
+function AuthForm({ onAuthenticated, onGuest }) {
   const [mode, setMode] = useState("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -30,6 +30,10 @@ function AuthForm({ onAuthenticated }) {
   };
 
   const isLogin = mode === "login";
+
+  const handleGuest = () => {
+    onGuest();
+  };
 
   return (
     <main className="auth-experience">
@@ -133,6 +137,20 @@ function AuthForm({ onAuthenticated }) {
               ? "New here? Create your account"
               : "Already have an account? Sign in"}
           </button>
+          <div className="auth-divider">
+            <span>or explore first</span>
+          </div>
+          <button
+            type="button"
+            className="button-secondary auth-demo"
+            onClick={handleGuest}
+          >
+            Continue as Guest
+          </button>
+          <p className="auth-demo-note">
+            Explore a sample workspace without creating an account. Your demo
+            changes stay on this device.
+          </p>
           <p className="auth-footnote">
             Your profile is protected by your account. Financial calculations
             stay transparent and explainable.

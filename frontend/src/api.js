@@ -1,4 +1,28 @@
 import axios from "axios";
+import {
+  createDemoGoal,
+  createDemoHolding,
+  createDemoTransaction,
+  deleteDemoGoal,
+  getDemoDashboard,
+  getDemoProfile,
+  getDemoReply,
+  updateDemoProfile,
+} from "./demoData";
+
+export const GUEST_STORAGE_KEY = "ai-money-mentor-guest";
+
+export function isGuestMode() {
+  return window.localStorage.getItem(GUEST_STORAGE_KEY) === "true";
+}
+
+export function enterGuestMode() {
+  window.localStorage.setItem(GUEST_STORAGE_KEY, "true");
+}
+
+export function exitGuestMode() {
+  window.localStorage.removeItem(GUEST_STORAGE_KEY);
+}
 
 const envBaseUrl =
   (typeof process !== "undefined" &&
@@ -69,6 +93,7 @@ async function postJson(path, payload) {
 }
 
 export async function getMoneyScore(userData) {
+  if (isGuestMode()) return getDemoDashboard().score;
   try {
     const data = await postJson("/api/score", userData);
     return {
@@ -85,6 +110,15 @@ export async function getMoneyScore(userData) {
 }
 
 export async function getFirePlan(userData) {
+  if (isGuestMode()) {
+    const { metrics } = getDemoDashboard();
+    return {
+      fire_age: metrics.fireAge,
+      corpus_needed: metrics.corpusNeeded,
+      projected_corpus: metrics.projectedCorpus,
+      monthly_sip_recommended: metrics.requiredMonthlyInvestment,
+    };
+  }
   try {
     const data = await postJson("/api/fire-plan", userData);
     return {
@@ -108,6 +142,12 @@ export async function getFirePlan(userData) {
 }
 
 export async function sendChatMessage(question, userContext) {
+  if (isGuestMode()) {
+    return {
+      ...DEFAULT_CHAT_REPLY,
+      reply: getDemoReply(question, userContext),
+    };
+  }
   try {
     const data = await postJson("/api/chat", {
       question,
@@ -145,26 +185,31 @@ export async function logout() {
 }
 
 export async function getFinanceProfile() {
+  if (isGuestMode()) return getDemoProfile();
   const response = await apiClient.get("/api/finance/profile");
   return response.data.finance;
 }
 
 export async function updateFinanceProfile(finance) {
+  if (isGuestMode()) return updateDemoProfile(finance);
   const response = await apiClient.put("/api/finance/profile", finance);
   return response.data.finance;
 }
 
 export async function getDashboard() {
+  if (isGuestMode()) return getDemoDashboard();
   const response = await apiClient.get("/api/dashboard");
   return response.data;
 }
 
 export async function getGoals() {
+  if (isGuestMode()) return getDemoDashboard().goals;
   const response = await apiClient.get("/api/goals");
   return response.data.goals;
 }
 
 export async function createGoal(goal) {
+  if (isGuestMode()) return createDemoGoal(goal);
   const response = await apiClient.post("/api/goals", goal);
   return response.data.goal;
 }
@@ -175,30 +220,39 @@ export async function updateGoal(id, goal) {
 }
 
 export async function deleteGoal(id) {
+  if (isGuestMode()) {
+    deleteDemoGoal(id);
+    return;
+  }
   await apiClient.delete(`/api/goals/${id}`);
 }
 
 export async function getHoldings(kind) {
+  if (isGuestMode()) return getDemoDashboard()[kind];
   const response = await apiClient.get(`/api/${kind}`);
   return response.data[kind];
 }
 
 export async function createHolding(kind, holding) {
+  if (isGuestMode()) return createDemoHolding(kind, holding);
   const response = await apiClient.post(`/api/${kind}`, holding);
   return response.data[kind === "assets" ? "asset" : "liability"];
 }
 
 export async function listTransactions() {
+  if (isGuestMode()) return getDemoDashboard().transactions;
   const response = await apiClient.get("/api/transactions");
   return response.data.transactions;
 }
 
 export async function createTransaction(transaction) {
+  if (isGuestMode()) return createDemoTransaction(transaction);
   const response = await apiClient.post("/api/transactions", transaction);
   return response.data.transaction;
 }
 
 export async function getSnapshots() {
+  if (isGuestMode()) return getDemoDashboard().snapshots;
   const response = await apiClient.get("/api/snapshots");
   return response.data.snapshots;
 }

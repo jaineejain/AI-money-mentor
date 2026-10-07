@@ -278,6 +278,39 @@ select:focus-visible {
     sans-serif;
   cursor: pointer;
 }
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 24px 0 14px;
+  color: #a0afa6;
+  font:
+    11px ui-sans-serif,
+    sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+.auth-divider::before,
+.auth-divider::after {
+  flex: 1;
+  height: 1px;
+  background: #dce8df;
+  content: "";
+}
+.auth-demo {
+  width: 100%;
+  min-height: 46px;
+  border-color: #b7e4c7;
+  background: #f0fdf4;
+}
+.auth-demo-note {
+  margin: 10px 0 0;
+  color: #718078;
+  font:
+    11px/1.5 ui-sans-serif,
+    sans-serif;
+  text-align: center;
+}
 .auth-footnote {
   margin-top: 46px;
   color: #8a9a91;

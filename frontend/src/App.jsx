@@ -5,6 +5,9 @@ import {
   getFinanceProfile,
   getFirePlan,
   getMoneyScore,
+  enterGuestMode,
+  exitGuestMode,
+  isGuestMode,
   logout,
   updateFinanceProfile,
 } from "./api";
@@ -27,6 +30,7 @@ function App() {
   const [view, setView] = useState("onboarding");
   const [authStatus, setAuthStatus] = useState("checking");
   const [currentUser, setCurrentUser] = useState(null);
+  const [isGuest, setIsGuest] = useState(false);
   const [userFinance, setUserFinance] = useState(initialFormState);
   const [dashboard, setDashboard] = useState(null);
   const [error, setError] = useState("");
@@ -85,6 +89,15 @@ function App() {
   };
 
   useEffect(() => {
+    if (isGuestMode()) {
+      const guestUser = { email: "guest@demo.local", isGuest: true };
+      setCurrentUser(guestUser);
+      setIsGuest(true);
+      setAuthStatus("authenticated");
+      getFinanceProfile().then(loadWorkspace);
+      return;
+    }
+
     getCurrentUser()
       .then(async (user) => {
         setCurrentUser(user);
@@ -96,7 +109,17 @@ function App() {
       .catch(() => setAuthStatus("signed-out"));
   }, []);
 
+  const handleGuest = async () => {
+    enterGuestMode();
+    setCurrentUser({ email: "guest@demo.local", isGuest: true });
+    setIsGuest(true);
+    setAuthStatus("authenticated");
+    await loadWorkspace(await getFinanceProfile());
+  };
+
   const handleAuthenticated = async (user) => {
+    exitGuestMode();
+    setIsGuest(false);
     setCurrentUser(user);
     setAuthStatus("authenticated");
     const profile = await getFinanceProfile();
@@ -117,8 +140,13 @@ function App() {
   };
 
   const handleLogout = async () => {
-    await logout();
+    if (isGuest) {
+      exitGuestMode();
+    } else {
+      await logout();
+    }
     setCurrentUser(null);
+    setIsGuest(false);
     setDashboard(null);
     setAuthStatus("signed-out");
     setView("onboarding");
@@ -128,7 +156,7 @@ function App() {
     <>
       {authStatus === "checking" && <LoadingScreen />}
       {authStatus === "signed-out" && (
-        <AuthForm onAuthenticated={handleAuthenticated} />
+        <AuthForm onAuthenticated={handleAuthenticated} onGuest={handleGuest} />
       )}
       {authStatus === "authenticated" && view === "onboarding" && (
         <OnboardingForm onSubmit={handleSubmit} initialValues={userFinance} />
@@ -147,6 +175,7 @@ function App() {
             data={dashboard}
             onEdit={() => setView("onboarding")}
             onLogout={handleLogout}
+            isGuest={isGuest}
             refresh={refresh}
           />
         </>
