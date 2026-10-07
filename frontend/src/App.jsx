@@ -1,5 +1,15 @@
-import { useEffect, useMemo, useState } from "react";
-import Dashboard from "./components/Dashboard";
+import { useEffect, useState } from "react";
+import {
+  getCurrentUser,
+  getDashboard,
+  getFinanceProfile,
+  getFirePlan,
+  getMoneyScore,
+  logout,
+  updateFinanceProfile,
+} from "./api";
+import AuthForm from "./components/AuthForm";
+import FinanceWorkspace from "./components/FinanceWorkspace";
 import LoadingScreen from "./components/LoadingScreen";
 import OnboardingForm from "./components/OnboardingForm";
 
@@ -15,131 +25,136 @@ const initialFormState = {
 
 function App() {
   const [view, setView] = useState("onboarding");
+  const [authStatus, setAuthStatus] = useState("checking");
+  const [currentUser, setCurrentUser] = useState(null);
   const [userFinance, setUserFinance] = useState(initialFormState);
+  const [dashboard, setDashboard] = useState(null);
+  const [error, setError] = useState("");
+
+  const loadWorkspace = async (profile) => {
+    setUserFinance(profile);
+    setView("loading");
+    try {
+      setDashboard(await getDashboard());
+      setError("");
+      setView("dashboard");
+    } catch {
+      setError(
+        "Your profile loaded, but the financial workspace could not be refreshed.",
+      );
+      const [score, fire] = await Promise.all([
+        getMoneyScore(profile),
+        getFirePlan(profile),
+      ]);
+      setDashboard({
+        finance: profile,
+        transactions: [],
+        budgets: [],
+        goals: [],
+        assets: [],
+        liabilities: [],
+        score,
+        metrics: {
+          savings: profile.monthly_income - profile.monthly_expenses,
+          savingsRate: profile.monthly_income
+            ? ((profile.monthly_income - profile.monthly_expenses) /
+                profile.monthly_income) *
+              100
+            : 0,
+          netWorth: profile.existing_savings,
+          totalAssets: profile.existing_savings,
+          totalLiabilities: 0,
+          fireAge: fire.fire_age,
+          corpusNeeded: fire.corpus_needed,
+          projectedCorpus: fire.projected_corpus || 0,
+          requiredMonthlyInvestment: fire.monthly_sip_recommended,
+          shortfall: fire.shortfall || 0,
+        },
+      });
+      setView("dashboard");
+    }
+  };
+
+  const refresh = async () => {
+    try {
+      setDashboard(await getDashboard());
+      setError("");
+    } catch {
+      setError("Could not refresh the latest financial data.");
+    }
+  };
 
   useEffect(() => {
-    if (view !== "loading") {
-      return undefined;
-    }
+    getCurrentUser()
+      .then(async (user) => {
+        setCurrentUser(user);
+        setAuthStatus("authenticated");
+        const profile = await getFinanceProfile();
+        if (profile) await loadWorkspace(profile);
+        else setView("onboarding");
+      })
+      .catch(() => setAuthStatus("signed-out"));
+  }, []);
 
-    const timer = window.setTimeout(() => {
-      setView("dashboard");
-    }, 1800);
+  const handleAuthenticated = async (user) => {
+    setCurrentUser(user);
+    setAuthStatus("authenticated");
+    const profile = await getFinanceProfile();
+    if (profile) await loadWorkspace(profile);
+    else setView("onboarding");
+  };
 
-    return () => window.clearTimeout(timer);
-  }, [view]);
-
-  const tagline = useMemo(() => "Your AI Financial Advisor", []);
-
-  const scoreData = useMemo(
-    () => ({
-      overall_score: userFinance.has_emergency_fund ? 78 : 64,
-      grade: userFinance.has_emergency_fund ? "B" : "C",
-      breakdown: {
-        emergency_fund: userFinance.has_emergency_fund ? 88 : 45,
-        insurance: userFinance.has_insurance ? 86 : 42,
-        investments: 67,
-        debt_health: 72,
-        tax_efficiency: 74,
-        retirement_readiness: 69,
-      },
-      summary:
-        "You are in a decent spot, but a stronger emergency fund and more disciplined SIP investing will improve your long-term outlook.",
-      top_3_actions: [
-        "Build a 3-6 month emergency fund in a liquid savings bucket.",
-        "Increase monthly SIPs into diversified mutual funds.",
-        "Use 80C, NPS, and PPF strategically to reduce tax outgo.",
-      ],
-      fire_age: Math.max(userFinance.age + 18, 45),
-    }),
-    [userFinance],
-  );
-
-  const firePlan = useMemo(
-    () => ({
-      fire_age: Math.max(userFinance.age + 18, 45),
-      corpus_needed: Math.round(userFinance.monthly_expenses * 300 * 12),
-      monthly_sip_recommended: Math.round(
-        Math.max(userFinance.monthly_income - userFinance.monthly_expenses, 0) *
-          0.7,
-      ),
-      asset_allocation: {
-        equity_mf: userFinance.age < 35 ? 65 : 55,
-        debt: 20,
-        gold: 10,
-        emergency: 5,
-      },
-      year_wise_milestones: [
-        {
-          year: 1,
-          action: "Create emergency corpus and start monthly SIPs.",
-          target_amount: Math.round(userFinance.monthly_expenses * 6),
-        },
-        {
-          year: 2,
-          action: "Max out 80C and increase SIP step-up.",
-          target_amount: Math.round(userFinance.existing_savings + 250000),
-        },
-        {
-          year: 3,
-          action: "Add NPS and rebalance asset allocation.",
-          target_amount: Math.round(userFinance.existing_savings + 600000),
-        },
-        {
-          year: 4,
-          action: "Scale investments into diversified mutual funds.",
-          target_amount: Math.round(userFinance.existing_savings + 1200000),
-        },
-        {
-          year: 5,
-          action: "Review FIRE progress and raise SIPs again.",
-          target_amount: Math.round(userFinance.existing_savings + 2000000),
-        },
-      ],
-      tax_saving_plan: {
-        "80C_amount": 150000,
-        NPS_amount: 50000,
-        total_tax_saved: 45000,
-      },
-    }),
-    [userFinance],
-  );
-
-  const handleSubmit = (values) => {
-    setUserFinance(values);
+  const handleSubmit = async (values) => {
     setView("loading");
+    try {
+      await loadWorkspace(await updateFinanceProfile(values));
+    } catch {
+      setError(
+        "We could not save your profile. Please check the backend and try again.",
+      );
+      setView("onboarding");
+    }
+  };
+
+  const handleLogout = async () => {
+    await logout();
+    setCurrentUser(null);
+    setDashboard(null);
+    setAuthStatus("signed-out");
+    setView("onboarding");
   };
 
   return (
-    <div className="min-h-screen">
-      <header className="sticky top-0 z-10 border-b border-green-100/80 bg-white/90 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
-          <div>
-            <div className="text-xl font-bold text-slate-900">
-              💰 Money Mentor
+    <>
+      {authStatus === "checking" && <LoadingScreen />}
+      {authStatus === "signed-out" && (
+        <AuthForm onAuthenticated={handleAuthenticated} />
+      )}
+      {authStatus === "authenticated" && view === "onboarding" && (
+        <OnboardingForm onSubmit={handleSubmit} initialValues={userFinance} />
+      )}
+      {authStatus === "authenticated" && view === "loading" && (
+        <LoadingScreen />
+      )}
+      {authStatus === "authenticated" && view === "dashboard" && dashboard && (
+        <>
+          {error && (
+            <div className="workspace-alert" role="alert">
+              {error}
             </div>
-            <div className="text-sm text-slate-500">{tagline}</div>
-          </div>
-          <div className="hidden rounded-full bg-green-50 px-4 py-2 text-sm font-medium text-brand sm:block">
-            Indian personal finance, simplified
-          </div>
-        </div>
-      </header>
-
-      <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
-        {view === "onboarding" && (
-          <OnboardingForm onSubmit={handleSubmit} initialValues={userFinance} />
-        )}
-        {view === "loading" && <LoadingScreen />}
-        {view === "dashboard" && (
-          <Dashboard
-            scoreData={scoreData}
-            firePlan={firePlan}
+          )}
+          <FinanceWorkspace
+            data={dashboard}
             onEdit={() => setView("onboarding")}
+            onLogout={handleLogout}
+            refresh={refresh}
           />
-        )}
-      </main>
-    </div>
+        </>
+      )}
+      {currentUser && (
+        <span className="sr-only">Signed in as {currentUser.email}</span>
+      )}
+    </>
   );
 }
 

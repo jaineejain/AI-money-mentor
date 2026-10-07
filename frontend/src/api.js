@@ -1,3 +1,5 @@
+import axios from "axios";
+
 const envBaseUrl =
   (typeof process !== "undefined" &&
     process.env &&
@@ -51,22 +53,19 @@ const DEFAULT_CHAT_REPLY = {
   reply:
     "I could not load the advisor response right now. Please try again shortly.",
   timestamp: new Date().toISOString(),
+  intent: "financial_education",
+  sources: [],
 };
 
+const apiClient = axios.create({
+  baseURL: BASE_URL,
+  headers: { "Content-Type": "application/json" },
+  withCredentials: true,
+});
+
 async function postJson(path, payload) {
-  const response = await fetch(`${BASE_URL}${path}`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(payload),
-  });
-
-  if (!response.ok) {
-    throw new Error(`Request failed with status ${response.status}`);
-  }
-
-  return response.json();
+  const response = await apiClient.post(path, payload);
+  return response.data;
 }
 
 export async function getMoneyScore(userData) {
@@ -124,4 +123,87 @@ export async function sendChatMessage(question, userContext) {
   } catch {
     return DEFAULT_CHAT_REPLY;
   }
+}
+
+export async function register(email, password) {
+  const response = await postJson("/api/auth/register", { email, password });
+  return response.user;
+}
+
+export async function login(email, password) {
+  const response = await postJson("/api/auth/login", { email, password });
+  return response.user;
+}
+
+export async function getCurrentUser() {
+  const response = await apiClient.get("/api/auth/me");
+  return response.data.user;
+}
+
+export async function logout() {
+  await apiClient.post("/api/auth/logout");
+}
+
+export async function getFinanceProfile() {
+  const response = await apiClient.get("/api/finance/profile");
+  return response.data.finance;
+}
+
+export async function updateFinanceProfile(finance) {
+  const response = await apiClient.put("/api/finance/profile", finance);
+  return response.data.finance;
+}
+
+export async function getDashboard() {
+  const response = await apiClient.get("/api/dashboard");
+  return response.data;
+}
+
+export async function getGoals() {
+  const response = await apiClient.get("/api/goals");
+  return response.data.goals;
+}
+
+export async function createGoal(goal) {
+  const response = await apiClient.post("/api/goals", goal);
+  return response.data.goal;
+}
+
+export async function updateGoal(id, goal) {
+  const response = await apiClient.put(`/api/goals/${id}`, goal);
+  return response.data.goal;
+}
+
+export async function deleteGoal(id) {
+  await apiClient.delete(`/api/goals/${id}`);
+}
+
+export async function getHoldings(kind) {
+  const response = await apiClient.get(`/api/${kind}`);
+  return response.data[kind];
+}
+
+export async function createHolding(kind, holding) {
+  const response = await apiClient.post(`/api/${kind}`, holding);
+  return response.data[kind === "assets" ? "asset" : "liability"];
+}
+
+export async function listTransactions() {
+  const response = await apiClient.get("/api/transactions");
+  return response.data.transactions;
+}
+
+export async function createTransaction(transaction) {
+  const response = await apiClient.post("/api/transactions", transaction);
+  return response.data.transaction;
+}
+
+export async function getSnapshots() {
+  const response = await apiClient.get("/api/snapshots");
+  return response.data.snapshots;
+}
+
+export async function createSnapshot() {
+  const response = await apiClient.post("/api/snapshots");
+  return response.data.snapshot;
 }

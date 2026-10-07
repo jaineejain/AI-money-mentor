@@ -1,0 +1,65 @@
+[
+  {
+    "id": "rbi-financial-education-emergency-fund",
+    "title": "Financial Planning and Emergency Funds",
+    "source": "Reserve Bank of India",
+    "url": "https://www.rbi.org.in/financialeducation/",
+    "category": "financial-basics",
+    "version": "RBI financial education portal",
+    "text": "An emergency fund is a readily accessible reserve for unexpected expenses or temporary income disruption. The appropriate amount depends on household obligations, income stability, insurance, and access to other liquid resources. Keep the reserve in suitable low-risk and liquid products, and review it when circumstances change. This educational summary points to the RBI financial education portal; it is not a product recommendation."
+  },
+  {
+    "id": "sebi-mutual-funds-investor",
+    "title": "Mutual Funds and Investor Education",
+    "source": "Securities and Exchange Board of India",
+    "url": "https://investor.sebi.gov.in/mutualfunds.html",
+    "category": "investing",
+    "version": "SEBI investor education portal",
+    "text": "A mutual fund pools money from investors and invests according to the scheme objective. Investors should read the scheme information and consider risks, costs, liquidity, time horizon, and suitability before investing. Past performance does not guarantee future returns. An index fund generally seeks to track a market index, subject to tracking error and fund costs."
+  },
+  {
+    "id": "pfrda-nps-overview",
+    "title": "National Pension System Overview",
+    "source": "Pension Fund Regulatory and Development Authority",
+    "url": "https://pfrda.org.in/web/guest/nps",
+    "category": "retirement",
+    "version": "PFRDA NPS portal",
+    "text": "The National Pension System is a regulated defined-contribution retirement savings system. Contributions are invested through permitted pension funds and asset classes selected under the applicable rules. Account features, withdrawals, annuity requirements, tax treatment, and charges depend on current regulations and the subscriber's circumstances. Check PFRDA and the official NPS channels for current rules."
+  },
+  {
+    "id": "epfo-employee-services",
+    "title": "Employees Provident Fund Information",
+    "source": "Employees Provident Fund Organisation",
+    "url": "https://www.epfindia.gov.in/site_en/For_Employees.php",
+    "category": "retirement",
+    "version": "EPFO employee portal",
+    "text": "The Employees Provident Fund is a retirement-oriented savings framework for eligible employees and establishments under the applicable law. Members can use official EPFO services to review account information and understand permitted claims and transfers. Contribution rules, interest, eligibility, and claim conditions can change, so use current EPFO guidance for decisions."
+  },
+  {
+    "id": "income-tax-deductions",
+    "title": "Deductions and Income Tax Guidance",
+    "source": "Income Tax Department, Government of India",
+    "url": "https://www.incometax.gov.in/iec/foportal/help/all-topics/deductions",
+    "category": "tax",
+    "version": "Income Tax Department deductions portal",
+    "text": "Income-tax deductions depend on the applicable assessment year, taxpayer profile, tax regime, eligible payment, limits, and documentation. Section 80C is one area of the tax rules, while other provisions may apply to products or payments such as provident fund contributions and eligible pension contributions. Tax rules and limits must be checked for the relevant financial year on the official Income Tax Department portal."
+  },
+  {
+    "id": "sebi-sip-investor",
+    "title": "Systematic Investment Plans",
+    "source": "Securities and Exchange Board of India",
+    "url": "https://investor.sebi.gov.in/mutualfunds.html",
+    "category": "investing",
+    "version": "SEBI investor education portal",
+    "text": "A systematic investment plan is a way to invest a chosen amount at regular intervals in a mutual fund scheme. The contribution schedule does not remove market risk, and returns are not guaranteed. Investors should choose products based on goals, time horizon, risk capacity, and the scheme documents."
+  },
+  {
+    "id": "rbi-financial-literacy",
+    "title": "Financial Literacy Resources",
+    "source": "Reserve Bank of India",
+    "url": "https://www.rbi.org.in/financialeducation/",
+    "category": "financial-basics",
+    "version": "RBI financial education portal",
+    "text": "Financial education includes understanding budgeting, saving, borrowing, interest, risk, and responsible use of financial services. Compare regulated products carefully, protect account credentials, and use official grievance and education channels when a financial service issue arises."
+  }
+]

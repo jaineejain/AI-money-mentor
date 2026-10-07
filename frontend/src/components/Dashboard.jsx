@@ -55,7 +55,7 @@ function formatChatTime(timestamp) {
     : date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 }
 
-function Dashboard({ scoreData, firePlan, onEdit }) {
+function Dashboard({ scoreData, firePlan, userFinance, onEdit }) {
   const scoreTone = getScoreTone(scoreData.overall_score);
   const [chatInput, setChatInput] = useState("");
   const [chatHistory, setChatHistory] = useState([
@@ -91,6 +91,7 @@ function Dashboard({ scoreData, firePlan, onEdit }) {
 
     try {
       const data = await sendChatMessage(question, {
+        ...userFinance,
         overall_score: scoreData.overall_score,
         grade: scoreData.grade,
         corpus_needed: firePlan.corpus_needed,
